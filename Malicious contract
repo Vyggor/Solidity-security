@@ -1,0 +1,46 @@
+/* Below contract is an example of a possible refund we would like to intialise, if a customer needs to pull his/her funds
+from the pool */
+
+
+contract refund {
+    address owner;
+ 
+    modifier OnlyOwner {
+        require( owner == msg.sender);
+    }
+
+    function returnFunds() public OnlyOwner returns (bool success) {
+        mike.transfer(contributedamount);
+        stella.transfer(contributedamount);
+        return true;
+    }
+
+    fallback () public payable {}
+    }
+    
+    /* In case we need to check if the address interacting with our contract is another contract or an actual user , we use assembly to 
+    check if there are bytes of code in the interacting address, if there are it is a contract. **this can be bypassed though if the malicious
+    contract uses a constructor. */
+    
+    contract Victim {
+     function checkIfContract () public view returns (bool){
+         // if there are bytes of code in the address then it s a contract
+         uint32 size;
+         address a = msg.sender;
+         assembly {
+             size := extcodesize(a)  //extcodesize retrieves the size of the code
+         }
+         return (size > 0);
+     }
+ }
+ 
+  /* Below is the attacking contract, using the constructor method into tricking the extcodesize returning 0 bytes */
+  
+  contract Attacker {
+     bool public hacked;
+     Victim victim;
+     constructor(address _v) {
+         victim = Victim(_v);
+         hacked = !victim.checkIfContract();
+     }
+     // if you call the address from the constructor there are 0 bytes so it s considered as non contract
